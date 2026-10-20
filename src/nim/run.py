@@ -11,8 +11,8 @@ type Step = tuple[Board, Action]
 Un tour de jeu.
 
 Un tour de jeu est la paire :math:`s, a`
-telle que :math:`s` est l'état ou le plateau du jeu 
-avant d'y poser l'action :math:`a`.
+telle que math `s` est l'état ou le plateau du jeu 
+avant d'y poser l'action math `a`.
 
 Exemples:
     >>> ( coup_final := ((0, 2, 0, 0), (1, 2)) )
@@ -31,18 +31,18 @@ def play(
     Args:
         game:
             Un jeu de nim avec un plateau neuf.
-            Si ``None``, une instance est créé avec les paramètres par défaut.
+            Si `None`, une instance est créé avec les paramètres par défaut.
         ai:
             Une intelligence artificielle de Q-Apprentissage.
             Dans le cas c'est deux intelligences artificielles qui
             s'affrontent, la même instance est utilisée.
-            Si ``None``, une instance est créé avec les paramètres par défaut.
+            Si `None`, une instance est créé avec les paramètres par défaut.
         human_player:
             Le numéro de joueur du joueur humain.
-            Si ``None``, alors on considère que deux agents s'affrontent.
+            Si `None`, alors on considère que deux agents s'affrontent.
         ui:
             L'interface utilisateur.
-            Si ``None``, une instance est créé avec les paramètres par défaut.
+            Si `None`, une instance est créé avec les paramètres par défaut.
     """
     game = game or Nim()
     ai = ai or QLearning()
@@ -120,21 +120,21 @@ def run(
     Args:
         human_player:
             Détermine si le joueur joue premier ou deuxième.
-            Si ``None``, l'humain joue premier.
+            Si `None`, l'humain joue premier.
         num_train_iterations:
             Le nombre de partie que l'agent va jouer pour s'entrainer.
         initial_board:
             Un plateau de jeu initial.
-            Si ``None``, un plateau aléatoire est généré.
+            Si `None`, un plateau aléatoire est généré.
         epsilon:
             Le taux d'exploration de l'agent.
-            Si ``None``, une probabilité aléatoire est utilisée.
+            Si `None`, une probabilité aléatoire est utilisée.
         alpha:
             Le facteur d'apprentissage.
-            Si ``None``, une probabilité aléatoire est utilisée.
+            Si `None`, une probabilité aléatoire est utilisée.
         gamma:
             Le facteur d'actualisation.
-            Si ``None``, une probabilité aléatoire est utilisée.
+            Si `None`, une probabilité aléatoire est utilisée.
     """
     human_player = human_player or 0
     epsilon = epsilon or random.randint(0, 100) / 100

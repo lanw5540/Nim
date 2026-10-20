@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 from typing import Literal
+import random
 
-from nim import Action, Board, Probability, QValue
+from nim import Action, Board, Probability, QValue,available_actions
 
 type Algorithm = Literal["greedy", "epsilon-greedy"]
 
 
 class QLearning:
     def __init__(
-        self,
-        epsilon: Probability = 0.1,
-        alpha: Probability = 0.0,
-        gamma: Probability = 0.0,
+            self,
+            epsilon: Probability = 0.1,
+            alpha: Probability = 0.5,
+            gamma: Probability = 0.9,
     ):
-        r"""Initialise l'IA.
+        """Initialise l'IA.
 
         Une IA nouvellement initialisée possède
         un dictionnaire d'apprentissage Q vide,
@@ -24,14 +25,30 @@ class QLearning:
         Args:
             epsilon:
                 Le taux d'exploration.
-
+                Epsilon est la probabilité que l'agent
+                choisisse une action au hasard plutôt que la meilleure action
+                connue pendant l'entraînement.
+                Avec math `\epsilon = 0` ,l'agent n'explore jamais et risque
+                de rester bloqué sur les premières actions qui ont fonctionné ;
+                avec math`\epsilon = 1`, il joue toujours au hasard et
+                n'exploite jamais ce qu'il a appris.
+                La valeur par défaut de 0.1 est une bonne option par default.
+                l'agent exploite ses connaissances 90 % du temps et explore
+                assez pour découvrir les autres actions.
                 TODO: epsilon (5 points)
                     Identifier une valeur par défaut
                     et documenter le paramètre alpha de manière à expliquer
                     le sens du paramètre et le choix de sa valeur.
             alpha:
                 Le facteur d'apprentissage.
-
+                Alpha (math`\alpha`) détermine à quel point une nouvelle
+                estimation remplace l'ancienne valeur-Q
+                (math`0 \leq \alpha \leq 1`).
+                Avec math`\alpha = 0`, la valeur-Q ne change jamais et
+                l'agent n'apprend rien ; avec math`\alpha = 1`, l'ancienne
+                valeur est entièrement remplacée par la dernière expérience.
+                La valeur par défaut de 0.5 accorde autant d'importance à
+                l'expérience passée qu'à la nouvelle information.
                 TODO: alpha (5 points)
                     Identifier une valeur par défaut
                     et documenter le paramètre alpha de manière à expliquer
@@ -39,13 +56,13 @@ class QLearning:
             gamma:
                 Le facteur d'actualisation.
 
-                Dans le Q-learning, γ (:math:`\gamma`) multiplie l'estimation
+                Dans le Q-learning, γ (math`\gamma`) multiplie l'estimation
                 de la valeur future optimale.
                 L'importance accordée à la récompense suivante est définie
                 par le paramètre gamma.
 
                 Gamma est un nombre réel compris entre 0 et 1
-                (:math:`0 \leq \gamma \leq 1`).
+                (math`0 \leq \gamma \leq 1`).
                 Si l'on fixe gamma à zéro, l'agent ignore totalement les
                 récompenses futures ;
                 de tels agents ne prennent en compte que les récompenses
@@ -53,6 +70,10 @@ class QLearning:
                 En revanche, si l'on fixe gamma à 1,
                 l'algorithme recherche des récompenses élevées à long terme.
 
+                La valeur par défaut de 0.9 s'explique parce qu'au Nim,
+                seule la dernière action d'une partie reçoit une récompense
+                non nulle. Un gamma élevé permet à cette récompense de se
+                propager jusqu'aux premiers coups de la partie.
                 TODO: gamma (2 points)
                     Identifier une valeur par défaut
 
@@ -91,6 +112,7 @@ class QLearning:
 
         Si aucune valeur-Q n'existe encore dans `self.q`, retourne 0.
         """
+        return self.q.get((state, action),0)
         # TODO: get_q_value (10 points)
         #   Tester et implémenter get_q_value
 
@@ -128,9 +150,14 @@ class QLearning:
         facteur d'actualisation.
 
         """
+
+        new_q = reward + self.gamma * future_rewards
+        self.q[(state, action)] = old_q + self.alpha * (new_q - old_q)
+
+
         # TODO: update_q_value (10 points)
         #   Tester et implémenter update_q_value
-        raise NotImplementedError
+
 
     def best_future_reward(self, state: Board) -> QValue:
         """Estime la meilleure récompense future étant donné un état `state`.
@@ -142,9 +169,13 @@ class QLearning:
         S'il n'y a aucune action disponible dans l'état, retourne 0.
 
         """
+        return max(
+            (self.get_q_value(state, action) for action in available_actions(state)),
+            default=0,
+        )
         # TODO: best_future_reward (10 points)
         #   Tester et implémenter best_future_reward
-        raise NotImplementedError
+
 
     def choose_action(self, state: Board, train: bool = True) -> Action:
         """Étant donné un état, retourne une action à entreprendre.
@@ -161,6 +192,11 @@ class QLearning:
         elles est une valeur de retour acceptable.
 
         """
+        actions = list(available_actions(state))
+        if train and random.random() < self.epsilon:
+            return random.choice(actions)
+        return max(actions, key=lambda action: self.get_q_value(state, action))
+
         # TODO: choose_action (10 points)
         #   Tester et implémenter choose_action
-        raise NotImplementedError
+

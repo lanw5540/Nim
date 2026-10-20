@@ -15,9 +15,8 @@ Le plateau de jeu.
 Un plateau de jeu de Nim a plusieurs tas d'objets. 
 
 Nous représentons ce plateau par 
-un :math:`n`-uplet d'entiers :math:`k`
-tels qu'il y a :math:`n` tas de :math:`k` objets, 
-:math:`n, k \in \mathbb{N}`.
+un math n-uplet d'entiers math k
+tels qu'il y a math n tas de math k objets
 
 Exemples:
     >>> ( board_with_3_tas_of_123 := (1, 2, 3) )
@@ -34,9 +33,9 @@ type Action = tuple[int, int]
 r"""
 Une action posée sur un plateau de jeu.
 
-Une action est la paire :math:`i, j`
-telle que de la tas numéro :math:`i` on retire :math:`j` objets
-:math:`i, j in \mathbb{N}`.
+Une action est la paire math i, j
+telle que de la tas numéro math i on retire math j objets
+
 
 Exemples:
     >>> ( prendre_7_objets_de_la_première_tas := (0, 7) )
@@ -51,8 +50,8 @@ type Player = Literal[0, 1]
 Le joueur zéro commence, le numéro 1 joue deuxième.
 
 On distingue un joueur de l'autre par leur numéro. 
-Le premier à jouer porte le numéroi ``0`` et l'autre porte le numéro ``1``.
-Aux échecs, les blancs sont ``0`` et les noirs sont ``1``.
+Le premier à jouer porte le numéro i 0 et l'autre porte le numéro 1.
+Aux échecs, les blancs sont 0 et les noirs sont 1.
 
 Exemples:
     >>> ( le_joueur_qui_commence_la_partie := 0)
@@ -77,6 +76,14 @@ Exemples:
 
 
 type QValue = float | int
+"""
+L'estimation de la récompense espérée pour une paire état, action.
+Une action qui fait perdre la partie reçoit une récompense de -1,
+une action qui la fait gagner reçoit 1,
+et une action qui fait continuer la partie reçoit 0.
+Au fil de l'apprentissage, la valeur-Q d'une paire se rapproche
+de la récompense totale qu'elle rapporte.
+"""
 # TODO: QValue (5 points)
 #   Documenter le type nim.QValue
 
@@ -105,31 +112,54 @@ def transition(board: Board, action: Action) -> Board:
         board:
             Un état d'un plateau de Nim d'origine.
         action:
-            L'action à effectuer, laquelle doit être un tuple ``(i, j)``
-            où *i* est le numéro du barrilet et *j* le nombre de charges
+            L'action à effectuer, laquelle doit être un tuple (i, j)
+            où i est le numéro du barrilet et j le nombre de charges
             à retirer.
 
     Raises:
         IndexError:
-            Une action qui contient un :math:`i` qui ne corresponde à
+            Une action qui contient un math i qui ne corresponde à
             aucune tas lève une erreur.
         ValueError:
-            Une action qui contient un :math:`j` trop grand ou trop
-            petit pour la quantité d'objets dans la tas math:`i` lève
+            Une action qui contient un math j trop grand ou trop
+            petit pour la quantité d'objets dans la tas math i lève
             une erreur.
 
     Return:
         L'état du plateau de Nim résultant de l'application de l'action
         sur l'état d'origine.
     """
+    heap, count = action
+    if not 0 <= heap < len(board):
+        raise IndexError(f"Le tas {heap} n'est pas la ")
+    if not 1 <= count <= board[heap]:
+        raise ValueError(f"Impossible de retirer {count} objet(s) du tas {heap}")
+    new_board = list(board)
+    new_board[heap] -= count
+    return tuple(new_board)
+    """
     # TODO: transition (10 points)
     #   Tester et implémenter nim.transition
-
+    """
 
 def available_actions(board_data: Board) -> Collection[Action]:
-    # TODO: available_actions (10 points)
-    #    Documenter et implémenter nim.available_actions
-    ...
+    """Retourne toutes les actions possibles sur un plateau.
+        Une action (i, j) est possible si le tas i existe et
+        contient au moins j objets, avec math j \geq 1.
+        Args:
+            board_data:
+            Un état d'un plateau de Nim.
+        Return:
+            L'ensemble des actions (i, j) qui peuvent être appliquées
+            au plateau avec func transition.
+            L'ensemble est vide si tous les tas sont vides.
+        """
+    return {
+        (heap, count)
+        for heap, pile in enumerate(board_data)
+        for count in range(1, pile + 1)
+    }
+
 
 
 class Nim:
@@ -169,20 +199,19 @@ class Nim:
 
         Args:
             action:
-                L'action à effectuer, laquelle doit être un tuple ``(i, j)``
-                où *i* est le numéro du barrilet et *j* le nombre de charges
+                L'action à effectuer, laquelle doit être un tuple (i, j)
+                où i est le numéro du barrilet et j le nombre de charges
                 à retirer.
 
         """
         if self.winner is not None:
             raise NimError("Game already won")
-
         try:
             self.board = transition(self.board, action)
         except (IndexError, ValueError) as e:
             raise NimError() from e
-
         self.switch_player()
+        return self.board
 
     @property
     def winner(self) -> Player | None:
